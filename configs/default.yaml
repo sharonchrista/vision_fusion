@@ -1,0 +1,199 @@
+# ─────────────────────────────────────────────
+#  LiquidFusionNet  —  master config
+#  Target: IEEE T-ITS submission
+# ─────────────────────────────────────────────
+
+project:
+  name: LiquidFusionNet
+  version: "1.0.0"
+  seed: 42
+
+# ── Paths ────────────────────────────────────
+paths:
+  raw_data:       data/raw
+  extracted:      data/extracted
+  processed:      data/processed
+  shards:         data/shards/nuscenes_mini_labeled
+  splits:         data/splits
+  checkpoints:    results/checkpoints
+  logs:           results/logs
+  metrics:        results/metrics
+  figures:        results/figures
+
+# ── Dataset ──────────────────────────────────
+dataset:
+  # zip file names inside data/raw/
+  zips:
+    camera:     DATASET.zip
+    radar:      Terrestrial_Radar.zip
+    lidar:      TIAND_LiDAR-object detection.zip
+    multimodal: TIAND_MULTIMODAL_DATASET.zip
+
+  # Scene-level train/val/test split (no frame leakage)
+  # Stratified by road_type: highway / state / district / urban / rural
+  split_ratios: [0.70, 0.15, 0.15]
+
+  # Classes (Indian mixed-traffic)
+  classes:
+    - car
+    - two_wheeler
+    - pedestrian
+    - auto_rickshaw
+    - truck
+    - bus
+    - animal
+
+  num_classes: 7
+
+  # Sensor specs
+  camera:
+    num_cameras: 4
+    img_height: 1200
+    img_width:  1920
+    resize_height: 480
+    resize_width:  640
+    fps: 10
+
+  radar:
+    num_radars: 6          # 1 LR + 5 SR
+    lr_range_m: 200
+    sr_range_m: 100
+    num_channels: 13       # distance, velocity, accel, stddevs …
+    fov_lr_deg: 120
+    fov_sr_deg: 150
+
+  lidar:
+    channels: 128
+    hz: 10
+    max_points: 16384      # subsample target per frame
+    voxel_size: [0.1, 0.1, 0.2]   # x,y,z in metres
+
+  imu_gps:
+    imu_hz: 100
+    gps_hz: 10
+    imu_channels: 9        # ax,ay,az, gx,gy,gz, roll,pitch,yaw
+    gps_channels: 4        # lat,lon,alt,speed
+
+# ── Preprocessing ────────────────────────────
+preprocessing:
+  shard_size: 256          # scenes per HDF5 shard
+  num_workers: 8
+  lidar_ground_removal: true
+  radar_min_snr: 12        # dB — filter weak returns
+  camera_normalize_mean: [0.485, 0.456, 0.406]
+  camera_normalize_std:  [0.229, 0.224, 0.225]
+
+# ── Model ─────────────────────────────────────
+model:
+  # Camera encoder
+  camera_backbone: resnet50      # resnet50 | efficientnet_b3 | vit_small
+  camera_pretrained: true
+  camera_feat_dim: 256
+
+  # Radar encoder
+  radar_hidden_dims: [64, 128, 256]
+  radar_feat_dim: 128
+
+  # LiDAR encoder
+  lidar_encoder: pointnet2       # pointnet2 | voxelnet
+  lidar_feat_dim: 256
+  lidar_num_points: 16384
+
+  # IMU/GPS encoder
+  imu_hidden_dims: [32, 64]
+  imu_feat_dim: 64
+
+  # Fused feature dim (sum of above)
+  # 256 + 128 + 256 + 64 = 704
+  fused_dim: 704
+
+  # LTC-NCP temporal core
+  ltc:
+    inter_neurons: 64
+    command_neurons: 32
+    motor_neurons: 3
+    sparsity_level: 0.5    # fraction of connections active
+    mode: default          # default | pure | no_gate  (CfC variants)
+
+  # Task head dims
+  detection_head_dim: 256
+  tracking_head_dim:  128
+  forecast_head_dim:  256
+  forecast_horizon:   30  # timesteps = 3s at 10 Hz
+
+# ── Training ──────────────────────────────────
+training:
+  epochs: 80
+  batch_size: 4            # per GPU; effective = 4 × num_gpus
+  num_gpus: 4
+  precision: fp16          # fp16 | fp32
+  grad_clip: 1.0
+
+  optimizer:
+    name: adamw
+    lr: 1.0e-4
+    weight_decay: 1.0e-4
+    betas: [0.9, 0.999]
+
+  scheduler:
+    name: cosine
+    warmup_epochs: 5
+    min_lr: 1.0e-6
+
+  # Kendall uncertainty loss weights (learned)
+  loss:
+    use_uncertainty_weighting: true
+    lambda_det:  1.0        # initial value — learned during training
+    lambda_trk:  1.0
+    lambda_traj: 1.0
+    focal_gamma: 2.0
+    focal_alpha: 0.25
+    iou_loss_type: ciou     # iou | giou | ciou
+
+  # Freeze encoder for first N epochs
+  freeze_encoders_epochs: 10
+
+  # Validation frequency
+  val_every_n_epochs: 2
+  save_every_n_epochs: 5
+
+# ── Evaluation ────────────────────────────────
+evaluation:
+  det_iou_thresholds: [0.5, 0.75]
+  trk_metrics: [MOTA, MOTP, IDF1, ID_switches]
+  traj_horizons_s: [1.0, 2.0, 3.0]   # ADE/FDE at each
+  miss_rate_threshold_m: 2.0
+
+# ── Ablations (T-ITS requirement) ─────────────
+ablations:
+  - name: camera_only
+    modalities: [camera]
+    ltc: true
+  - name: camera_lidar
+    modalities: [camera, lidar]
+    ltc: true
+  - name: camera_lidar_radar
+    modalities: [camera, lidar, radar]
+    ltc: true
+  - name: full_no_delta_t
+    modalities: [camera, lidar, radar, imu_gps]
+    ltc: true
+    inject_delta_t: false
+  - name: full_lstm
+    modalities: [camera, lidar, radar, imu_gps]
+    ltc: false     # swap LTC for LSTM baseline
+  - name: full_transformer
+    modalities: [camera, lidar, radar, imu_gps]
+    ltc: false
+    inject_delta_t: true
+    use_transformer: true
+  - name: full_model
+    modalities: [camera, lidar, radar, imu_gps]
+    ltc: true
+    inject_delta_t: true
+
+# ── Logging ───────────────────────────────────
+logging:
+  use_wandb: true
+  project: liquidfusionnet-tits
+  log_every_n_steps: 50

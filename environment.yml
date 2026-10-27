@@ -1,0 +1,61 @@
+name: liquidfusion
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.10
+  - pip
+
+  # Core ML
+  - pytorch=2.2.0
+  - torchvision=0.17.0
+  - torchaudio=2.2.0
+  - pytorch-cuda=11.8
+
+  # Scientific stack
+  - numpy=1.26.4
+  - scipy=1.12.0
+  - pandas=2.2.1
+  - scikit-learn=1.4.1
+
+  # Point cloud
+  - conda-forge::open3d=0.18.0
+
+  # Data I/O
+  - h5py=3.10.0
+  - pillow=10.2.0
+  - opencv=4.9.0
+
+  # Visualisation
+  - matplotlib=3.8.3
+  - seaborn=0.13.2
+
+  # Config & logging
+  - pyyaml=6.0.1
+  - tqdm=4.66.2
+  - tensorboard=2.16.2
+
+  - pip:
+    # LTC / NCP core
+    - ncps==0.0.7
+
+    # Tracking evaluation
+    - trackeval==1.0.0
+
+    # Distributed training utils
+    - einops==0.7.0
+
+    # Additional point cloud ops
+    - torch-scatter==2.1.2
+    - torch-cluster==1.6.3
+
+    # Experiment tracking
+    - wandb==0.16.4
+
+    # Linting / testing
+    - pytest==8.1.1
+    - black==24.3.0
+    - ruff==0.3.4

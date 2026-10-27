@@ -1,0 +1,61 @@
+# ==========================================
+# Vision Fusion Research Project
+# ==========================================
+
+# Python environments and caches
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+*.egg-info/
+
+# IDE files
+.vscode/
+.idea/
+
+# Credentials and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+token.json
+
+# Large datasets (371 GB)
+/data/
+
+# Model caches (890 MB)
+/point_e_model_cache/
+
+# Pretrained weights (333 MB)
+/models/pretrained/
+
+# Training checkpoints
+/results/checkpoints/
+/results/checkpoints_v2/
+/results/checkpoints_v3/
+
+# Generated training logs
+/logs/
+/results/logs/
+nohup.out
+*.log
+
+# Installation files
+Miniconda3-latest-Linux-x86_64.sh
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+.DS_Store
+
+# Nested repository, to be handled separately
+/voxel-mae/

@@ -1,0 +1,165 @@
+{
+  "checkpoint": "best_epoch035.pt",
+  "epoch": 35,
+  "det_loss_mean": 2.163771757057735,
+  "zsd_loss_mean": 1.0085231161543302,
+  "per_class": {
+    "car": {
+      "gt_count": 97,
+      "tp": 79,
+      "recall": 81.44329896907216,
+      "type": "SEEN"
+    },
+    "motorcycle": {
+      "gt_count": 54,
+      "tp": 0,
+      "recall": 0.0,
+      "type": "SEEN"
+    },
+    "trimotorcycle": {
+      "gt_count": 15,
+      "tp": 0,
+      "recall": 0.0,
+      "type": "SEEN"
+    },
+    "scooter": {
+      "gt_count": 11,
+      "tp": 0,
+      "recall": 0.0,
+      "type": "SEEN"
+    },
+    "pedestrian": {
+      "gt_count": 3,
+      "tp": 0,
+      "recall": 0.0,
+      "type": "RARE/ZSD"
+    },
+    "unknown1": {
+      "gt_count": 10,
+      "tp": 1,
+      "recall": 10.0,
+      "type": "RARE/ZSD"
+    },
+    "bus": {
+      "gt_count": 0,
+      "tp": 0,
+      "recall": null,
+      "type": "RARE/ZSD"
+    },
+    "truck": {
+      "gt_count": 1,
+      "tp": 0,
+      "recall": 0.0,
+      "type": "RARE/ZSD"
+    },
+    "van": {
+      "gt_count": 0,
+      "tp": 0,
+      "recall": null,
+      "type": "RARE/ZSD"
+    }
+  },
+  "confusion_matrix": [
+    [
+      79,
+      0,
+      4,
+      0,
+      0,
+      14,
+      0,
+      0,
+      0
+    ],
+    [
+      45,
+      0,
+      2,
+      0,
+      0,
+      7,
+      0,
+      0,
+      0
+    ],
+    [
+      14,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      10,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      9,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  ],
+  "seen_mean_recall": 20.36082474226804,
+  "rare_mean_recall": 3.3333333333333335
+}
